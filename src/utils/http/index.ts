@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig, AxiosRequestConfig, AxiosResponse } 
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 import EmojiText from '../emojo'
+import { ApiStatus } from '@/utils/http/status'
 
 const axiosInstance = axios.create({
   timeout: 15000, // 请求超时时间(毫秒)
@@ -55,6 +56,11 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (axios.isCancel(error)) {
       console.log('repeated request: ' + error.message)
+    } else if (ApiStatus.unauthorized === error.status) {
+      // 未登录或登录失效，删除登录信息，跳到登录界面
+      const userStore = useUserStore()
+      userStore.logOut()
+      ElMessage.error('登录失效，请重新登录')
     } else {
       const errorMessage = error.response?.data.message
       ElMessage.error(
@@ -70,13 +76,13 @@ axiosInstance.interceptors.response.use(
 // 请求
 async function request<T = any>(config: AxiosRequestConfig): Promise<T> {
   // 对 POST | PUT 请求特殊处理
-  if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT') {
-    // 如果已经有 data，则保留原有的 data
-    if (config.params && !config.data) {
-      config.data = config.params
-      config.params = undefined // 使用 undefined 而不是空对象
-    }
-  }
+  // if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT') {
+  //   // 如果已经有 data，则保留原有的 data
+  //   if (config.params && !config.data) {
+  //     config.data = config.params
+  //     config.params = undefined // 使用 undefined 而不是空对象
+  //   }
+  // }
 
   try {
     const res = await axiosInstance.request<T>({ ...config })

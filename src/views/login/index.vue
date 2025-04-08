@@ -175,16 +175,21 @@
         const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
         try {
-          const res = await UserService.login({
+          let splits = formData.username.split('@')
+          let tenantAlias = ''
+          if (splits.length > 1) {
+            tenantAlias = splits[1]
+          }
+          const res = await AuthService.login({
             body: JSON.stringify({
-              username: formData.username,
-              password: formData.password
+              username: splits[0],
+              password: formData.password,
+              tenantAlias: tenantAlias
             })
           })
-
           if (res.code === ApiStatus.success && res.data) {
             // 设置 token
-            userStore.setToken(res.data.accessToken)
+            userStore.setToken(res.data.token)
 
             // 获取用户信息
             const userRes = await UserService.getUserInfo()
@@ -195,7 +200,7 @@
             // 设置登录状态
             userStore.setLoginStatus(true)
             // 延时辅助函数
-            await delay(1000)
+            // await delay(1000)
             // 登录成功提示
             showLoginSuccessNotice()
             // 跳转首页
@@ -237,6 +242,7 @@
   // 切换主题
   import { useTheme } from '@/composables/useTheme'
   import { UserService } from '@/api/usersApi'
+  import { AuthService } from '@/api/authApi'
 
   const toggleTheme = () => {
     let { LIGHT, DARK } = SystemThemeEnum

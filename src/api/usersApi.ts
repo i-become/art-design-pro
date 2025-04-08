@@ -1,9 +1,9 @@
-// import request from '@/utils/http'
+import request from '@/utils/http'
 // import { BaseResult } from '@/types/axios'
 import AppConfig from '@/config'
 import { BaseResult } from '@/types/axios'
 import { UserInfo } from '@/types/store'
-import avatar from '@imgs/user/avatar.png'
+// import avatar from '@imgs/user/avatar.png'
 
 export class UserService {
   // 模拟登录接口
@@ -35,18 +35,17 @@ export class UserService {
 
   // 获取用户信息
   static getUserInfo(): Promise<BaseResult<UserInfo>> {
-    return new Promise((resolve) => {
-      resolve({
-        code: 200,
-        message: '获取用户信息成功',
-        data: {
-          id: 1,
-          name: '张三',
-          username: 'John Snow',
-          avatar: avatar,
-          email: 'art.design@gmail.com'
-        }
-      })
+    return new Promise((resolve, reject) => {
+      request
+        .get<BaseResult<UserInfo>>({
+          url: '/sys/user/self_info'
+        })
+        .then((res) => {
+          resolve(res)
+        })
+        .catch((err) => {
+          reject(err)
+        })
     })
   }
 }
