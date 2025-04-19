@@ -40,9 +40,9 @@
 
         <el-table-column fixed="right" label="操作" width="180">
           <template #default="scope">
-            <button-table type="add" v-auth="'add'" @click="showModel('menu')" />
-            <button-table type="edit" v-auth="'edit'" @click="showDialog('edit', scope.row)" />
-            <button-table type="delete" v-auth="'delete'" @click="deleteMenu" />
+            <ArtButtonTable type="add" v-auth="'add'" @click="showModel('menu')" />
+            <ArtButtonTable type="edit" v-auth="'edit'" @click="showDialog('edit', scope.row)" />
+            <ArtButtonTable type="delete" v-auth="'delete'" @click="deleteMenu" />
           </template>
         </el-table-column>
       </template>
@@ -78,7 +78,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="图标" prop="icon">
-                <icon-selector :iconType="iconType" :defaultIcon="form.icon" width="229px" />
+                <ArtIconSelector :iconType="iconType" :defaultIcon="form.icon" width="229px" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -175,7 +175,7 @@
   import { IconTypeEnum } from '@/enums/appEnum'
   import { formatMenuTitle } from '@/utils/menu'
 
-  const menuList = computed(() => useMenuStore().getMenuList)
+  const { menuList } = storeToRefs(useMenuStore())
 
   const dialogVisible = ref(false)
   const form = reactive({
@@ -263,8 +263,6 @@
 
           ElMessage.success(`${isEdit.value ? '编辑' : '新增'}成功`)
           dialogVisible.value = false
-          // 刷新列表
-          // await menuStore.getMenuList()
         } catch {
           ElMessage.error(`${isEdit.value ? '编辑' : '新增'}失败`)
         }

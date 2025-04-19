@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <div class="left-wrap">
-      <left-view></left-view>
+      <LoginLeftView></LoginLeftView>
     </div>
     <div class="right-wrap">
       <div class="top-right-wrap">
@@ -65,8 +65,7 @@
             </el-form-item>
             <div class="drag-verify">
               <div class="drag-verify-content" :class="{ error: !isPassing && isClickPass }">
-                <!-- :background="isDark ? '#181818' : '#eee'" -->
-                <DragVerify
+                <ArtDragVerify
                   ref="dragVerify"
                   v-model:value="isPassing"
                   :width="width < 500 ? 328 : 438"
@@ -118,7 +117,6 @@
 </template>
 
 <script setup lang="ts">
-  import LeftView from '@/components/Pages/Login/LeftView.vue'
   import AppConfig from '@/config'
   import { ElMessage, ElNotification } from 'element-plus'
   import { useUserStore } from '@/store/modules/user'
@@ -132,6 +130,9 @@
   const { t } = useI18n()
   import { useSettingStore } from '@/store/modules/setting'
   import type { FormInstance, FormRules } from 'element-plus'
+
+  const settingStore = useSettingStore()
+  const { isDark, systemThemeType } = storeToRefs(settingStore)
 
   const userStore = useUserStore()
   const router = useRouter()
@@ -153,9 +154,6 @@
 
   const loading = ref(false)
   const { width } = useWindowSize()
-
-  const store = useSettingStore()
-  const isDark = computed(() => store.isDark)
 
   const onPass = () => {}
 
@@ -246,7 +244,7 @@
 
   const toggleTheme = () => {
     let { LIGHT, DARK } = SystemThemeEnum
-    useTheme().switchThemeStyles(useSettingStore().systemThemeType === LIGHT ? DARK : LIGHT)
+    useTheme().switchThemeStyles(systemThemeType.value === LIGHT ? DARK : LIGHT)
   }
 </script>
 
