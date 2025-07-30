@@ -128,6 +128,7 @@
   import { LanguageEnum, SystemThemeEnum } from '@/enums/appEnum'
   import { useI18n } from 'vue-i18n'
   import { HttpError } from '@/utils/http/error'
+  import { encryptByMD5 } from '@/utils/dataprocess/encrypt'
 
   defineOptions({ name: 'Login' })
 
@@ -140,7 +141,7 @@
   export interface Account {
     key: AccountKey
     label: string
-    userName: string
+    username: string
     password: string
     roles: string[]
   }
@@ -149,21 +150,21 @@
     {
       key: 'super',
       label: t('login.roles.super'),
-      userName: 'Super',
+      username: 'Super',
       password: '123456',
       roles: ['R_SUPER']
     },
     {
       key: 'admin',
       label: t('login.roles.admin'),
-      userName: 'Admin',
+      username: 'Admin',
       password: '123456',
       roles: ['R_ADMIN']
     },
     {
       key: 'user',
       label: t('login.roles.user'),
-      userName: 'User',
+      username: 'User',
       password: '123456',
       roles: ['R_USER']
     }
@@ -204,7 +205,7 @@
   const setupAccount = (key: AccountKey) => {
     const selectedAccount = accounts.value.find((account: Account) => account.key === key)
     formData.account = key
-    formData.username = selectedAccount?.userName ?? ''
+    formData.username = selectedAccount?.username ?? ''
     formData.password = selectedAccount?.password ?? ''
   }
 
@@ -229,8 +230,8 @@
       const { username, password } = formData
 
       const { token, refreshToken } = await UserService.login({
-        userName: username,
-        password
+        loginName: username,
+        password: encryptByMD5(password)
       })
 
       // 验证token

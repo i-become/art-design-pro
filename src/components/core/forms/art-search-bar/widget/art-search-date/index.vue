@@ -85,7 +85,6 @@
           ...baseConfig,
           type: 'date' as const,
           format: 'YYYY-MM-DD',
-          valueFormat: 'YYYY-MM-DD',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
 
@@ -94,7 +93,6 @@
           ...baseConfig,
           type: 'datetime' as const,
           format: 'YYYY-MM-DD HH:mm:ss',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
 
@@ -103,7 +101,6 @@
           ...baseConfig,
           type: 'daterange' as const,
           format: 'YYYY-MM-DD',
-          valueFormat: 'YYYY-MM-DD',
           rangeSeparator: '至',
           startPlaceholder: '开始日期',
           endPlaceholder: '结束日期'
@@ -114,7 +111,6 @@
           ...baseConfig,
           type: 'datetimerange' as const,
           format: 'YYYY-MM-DD HH:mm:ss',
-          valueFormat: 'YYYY-MM-DD HH:mm:ss',
           rangeSeparator: '至',
           startPlaceholder: '开始时间',
           endPlaceholder: '结束时间'
@@ -125,7 +121,6 @@
           ...baseConfig,
           type: 'month' as const,
           format: 'YYYY-MM',
-          valueFormat: 'YYYY-MM',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
 
@@ -134,7 +129,6 @@
           ...baseConfig,
           type: 'monthrange' as const,
           format: 'YYYY-MM',
-          valueFormat: 'YYYY-MM',
           rangeSeparator: '至',
           startPlaceholder: '开始月份',
           endPlaceholder: '结束月份'
@@ -145,7 +139,6 @@
           ...baseConfig,
           type: 'year' as const,
           format: 'YYYY',
-          valueFormat: 'YYYY',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
 
@@ -154,7 +147,6 @@
           ...baseConfig,
           type: 'yearrange' as const,
           format: 'YYYY',
-          valueFormat: 'YYYY',
           rangeSeparator: '至',
           startPlaceholder: '开始年份',
           endPlaceholder: '结束年份'
@@ -165,7 +157,6 @@
           ...baseConfig,
           type: 'week' as const,
           format: 'YYYY 第 ww 周',
-          valueFormat: 'YYYY-MM-DD',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
 
@@ -174,7 +165,6 @@
           ...baseConfig,
           type: 'date' as const,
           format: 'YYYY-MM-DD',
-          valueFormat: 'YYYY-MM-DD',
           placeholder: `${t('table.searchBar.searchSelectPlaceholder')}${props.item.label}`
         }
     }

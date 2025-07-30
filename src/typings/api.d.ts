@@ -12,7 +12,7 @@ declare namespace Api {
       // 状态码
       code: number
       // 消息
-      msg: string
+      message: string
       // 数据
       data: T
     }
@@ -41,7 +41,7 @@ declare namespace Api {
   namespace Auth {
     /** 登录参数 */
     interface LoginParams {
-      userName: string
+      loginName: string
       password: string
     }
 
@@ -57,9 +57,10 @@ declare namespace Api {
     /** 用户信息 */
     interface UserInfo {
       userId: number
-      userName: string
+      loginName: string
+      username: string
       roles: string[]
-      buttons: string[]
+      perms: string[]
       avatar?: string
       email?: string
       phone?: string
@@ -76,18 +77,45 @@ declare namespace Api {
     /** 用户列表项 */
     interface UserListItem {
       id: number
+      deptId: number // 部门ID
+      loginName: string // 账号
+      username: string
+      email: string
+      phone: string
+      sex: number
       avatar: string
+      status: 'NORMAL' | 'DISABLED' // 状态（NORMAL 正常 DISABLED 停用）
+      loginIp: string // 最后登录IP
+      loginDate: string // 最后登录时间
       createBy: string
       createTime: string
       updateBy: string
       updateTime: string
-      status: '1' | '2' | '3' | '4' // 1: 在线 2: 离线 3: 异常 4: 注销
-      userName: string
-      userGender: string
-      nickName: string
-      userPhone: string
-      userEmail: string
-      userRoles: string[]
+    }
+  }
+
+  // 菜单类型
+  namespace Menu {
+    /** 菜单列表项 */
+    interface MenuList {
+      id: number
+      parentId: number
+      name?: string
+      redirect?: string
+      component?: string
+      icon?: string
+      sort: number
+      title: string
+      target?: string
+      active?: string
+      type?: string
+      path?: string
+      isHide?: boolean
+      isFull?: boolean
+      isAffix?: boolean
+      isKeepAlive?: boolean
+      tag?: string
+      perms?: string
     }
   }
 }

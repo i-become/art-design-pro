@@ -7,7 +7,7 @@ import { $t } from '@/locales'
 // 常量定义
 const REQUEST_TIMEOUT = 15000 // 请求超时时间(毫秒)
 const LOGOUT_DELAY = 1000 // 退出登录延迟时间(毫秒)
-const MAX_RETRIES = 2 // 最大重试次数
+const MAX_RETRIES = 0 // 最大重试次数
 const RETRY_DELAY = 1000 // 重试延迟时间(毫秒)
 
 // 扩展 AxiosRequestConfig 类型
@@ -64,19 +64,21 @@ axiosInstance.interceptors.request.use(
 // 响应拦截器
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<Api.Http.BaseResponse>) => {
-    const { code, msg } = response.data
-
+    const { code, message } = response.data
     switch (code) {
       case ApiStatus.success:
         return response
       case ApiStatus.unauthorized:
         logOut()
-        throw new HttpError(msg || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
+        throw new HttpError(message || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
       default:
-        throw new HttpError(msg || $t('httpMsg.requestFailed'), code)
+        throw new HttpError(message || $t('httpMsg.requestFailed'), code)
     }
   },
   (error) => {
+    if (error.status == ApiStatus.unauthorized) {
+      logOut()
+    }
     return Promise.reject(handleError(error))
   }
 )
@@ -111,12 +113,12 @@ function shouldRetry(statusCode: number): boolean {
 // 请求函数
 async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> {
   // 对 POST | PUT 请求特殊处理
-  if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT') {
-    if (config.params && !config.data) {
-      config.data = config.params
-      config.params = undefined
-    }
-  }
+  // if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT') {
+  //   if (config.params && !config.data) {
+  //     config.data = config.params
+  //     config.params = undefined
+  //   }
+  // }
 
   try {
     const res = await axiosInstance.request<Api.Http.BaseResponse<T>>(config)

@@ -20,7 +20,7 @@
               <span><i class="iconfont-sys">&#xe6e9;</i>{{ item.comment }}</span>
             </div>
             <div class="right">
-              <span>{{ item.userName }}</span>
+              <span>{{ item.username }}</span>
             </div>
           </div>
         </li>
@@ -48,7 +48,7 @@
                 <span><i class="iconfont-sys">&#xe6e9;</i>{{ clickItem.comment }}</span>
               </div>
               <div class="right">
-                <span>{{ clickItem.userName }}</span>
+                <span>{{ clickItem.username }}</span>
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@
     content: '加油！学好Node 自己写个小Demo',
     collection: 5,
     comment: 8,
-    userName: '匿名'
+    username: '匿名'
   })
 
   const openDrawer = (item: any) => {

@@ -63,19 +63,22 @@
 
   // 表单搜索初始值
   const defaultFilter = ref({
-    name: undefined,
-    level: 'normal',
-    date: '2025-01-05',
-    daterange: ['2025-01-01', '2025-02-10'],
-    status: '1'
+    username: undefined,
+    loginName: undefined,
+    daterange: [],
+    status: 'NORMAL'
   })
 
   // 用户状态配置
   const USER_STATUS_CONFIG = {
-    '1': { type: 'success' as const, text: '在线' },
-    '2': { type: 'info' as const, text: '离线' },
-    '3': { type: 'warning' as const, text: '异常' },
-    '4': { type: 'danger' as const, text: '注销' }
+    NORMAL: { type: 'success' as const, text: '正常' },
+    DISABLED: { type: 'danger' as const, text: '停用' }
+  } as const
+
+  // 用户性别配置
+  const USER_SEX_CONFIG = {
+    0: '男',
+    1: '女'
   } as const
 
   /**
@@ -88,6 +91,13 @@
         text: '未知'
       }
     )
+  }
+
+  /**
+   * 获取用户性别配置
+   */
+  const getUserSexConfig = (sex: number) => {
+    return USER_SEX_CONFIG[sex as keyof typeof USER_SEX_CONFIG] || '未知'
   }
 
   const {
@@ -128,21 +138,28 @@
           formatter: (row) => {
             return h('div', { class: 'user', style: 'display: flex; align-items: center' }, [
               h('img', { class: 'avatar', src: row.avatar }),
-              h('div', {}, [
-                h('p', { class: 'user-name' }, row.userName),
-                h('p', { class: 'email' }, row.userEmail)
-              ])
+              h('div', {}, [h('p', { class: 'user-name' }, row.username)])
             ])
           }
         },
         {
-          prop: 'userGender',
+          prop: 'loginName',
+          label: '账号',
+          sortable: true
+        },
+        {
+          prop: 'email',
+          label: '邮箱',
+          sortable: true
+        },
+        {
+          prop: 'sex',
           label: '性别',
           sortable: true,
           // checked: false, // 隐藏列
-          formatter: (row) => row.userGender
+          formatter: (row) => getUserSexConfig(row.sex)
         },
-        { prop: 'userPhone', label: '手机号' },
+        { prop: 'phone', label: '手机号' },
         {
           prop: 'status',
           label: '状态',
@@ -154,6 +171,16 @@
         {
           prop: 'createTime',
           label: '创建日期',
+          sortable: true
+        },
+        {
+          prop: 'loginIp',
+          label: '最后登录IP',
+          sortable: true
+        },
+        {
+          prop: 'loginDate',
+          label: '最后登录时间',
           sortable: true
         },
         {
@@ -187,10 +214,12 @@
 
         // 使用本地头像替换接口返回的头像
         return records.map((item: any, index: number) => {
-          return {
-            ...item,
-            avatar: ACCOUNT_TABLE_DATA[index % ACCOUNT_TABLE_DATA.length].avatar
-          }
+          return item.avatar
+            ? { ...item, avatar: item.avatar }
+            : {
+                ...item,
+                avatar: ACCOUNT_TABLE_DATA[index % ACCOUNT_TABLE_DATA.length].avatar
+              }
         })
       }
     }
@@ -203,10 +232,11 @@
   const handleSearch = (params: Record<string, any>) => {
     // 处理日期区间参数，把 daterange 转换为 startTime 和 endTime
     const { daterange, ...searchParams } = params
-    const [startTime, endTime] = Array.isArray(daterange) ? daterange : [null, null]
+    console.log(daterange)
+    const [startCreateTime, endCreateTime] = Array.isArray(daterange) ? daterange : [null, null]
 
     // 搜索参数赋值
-    Object.assign(searchState, { ...searchParams, startTime, endTime })
+    Object.assign(searchState, { ...searchParams, startCreateTime, endCreateTime })
     searchData()
   }
 

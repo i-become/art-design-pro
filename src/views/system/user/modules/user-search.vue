@@ -51,8 +51,17 @@
   // --- 表单配置项 ---
   const formItems: SearchFormItem[] = [
     {
+      label: '账号',
+      prop: 'loginName',
+      type: 'input',
+      config: {
+        clearable: true
+      },
+      onChange: handleFormChange
+    },
+    {
       label: '用户名',
-      prop: 'name',
+      prop: 'username',
       type: 'input',
       config: {
         clearable: true
@@ -69,54 +78,11 @@
       onChange: handleFormChange
     },
     {
-      label: '用户等级',
-      prop: 'level',
-      type: 'select',
-      config: {
-        clearable: true
-      },
-      // options 可以是一个函数返回数组，也可以是直接的数组
-      options: [
-        { label: '普通用户', value: 'normal' },
-        { label: 'VIP用户', value: 'vip' },
-        { label: '高级VIP', value: 'svip' },
-        { label: '企业用户', value: 'enterprise', disabled: true }
-      ],
-      onChange: handleFormChange
-    },
-    {
-      label: '地址',
-      prop: 'address',
-      type: 'input',
-      config: {
-        clearable: true
-      },
-      onChange: handleFormChange
-    },
-    {
-      label: '邮箱',
-      prop: 'email',
-      type: 'input',
-      config: {
-        clearable: true
-      },
-      onChange: handleFormChange
-    },
-    {
-      prop: 'date',
-      label: '日期',
-      type: 'date',
-      config: {
-        type: 'date',
-        placeholder: '请选择日期'
-      }
-    },
-    {
       prop: 'daterange',
       label: '日期范围',
-      type: 'daterange',
+      type: 'datetimerange',
       config: {
-        type: 'daterange',
+        type: 'datetimerange',
         startPlaceholder: '开始时间',
         endPlaceholder: '结束时间'
       }
@@ -126,8 +92,8 @@
       prop: 'status',
       type: 'radio',
       options: [
-        { label: '在线', value: '1' },
-        { label: '离线', value: '2' }
+        { label: '正常', value: 'NORMAL' },
+        { label: '停用', value: 'DISABLED' }
       ],
       onChange: handleFormChange
     }

@@ -203,7 +203,7 @@
           <div class="user-info">
             <ElAvatar :src="row.avatar" :size="40" />
             <div class="user-details">
-              <p class="user-name">{{ row.userName }}</p>
+              <p class="user-name">{{ row.username }}</p>
               <p class="user-email">{{ row.userEmail }}</p>
             </div>
           </div>
@@ -489,7 +489,7 @@
 
   // 导出列配置
   const exportColumns = computed(() => ({
-    userName: { title: '用户名', width: 15 },
+    username: { title: '用户名', width: 15 },
     userEmail: { title: '邮箱', width: 20 },
     userPhone: { title: '手机号', width: 15 },
     userGender: { title: '性别', width: 10 },
@@ -597,7 +597,7 @@
         //   formatter: (row) =>
         //     h('div', { style: 'padding: 10px 30px' }, [
         //       h('p', {}, '用户ID: ' + row.id),
-        //       h('p', {}, '用户名: ' + row.userName),
+        //       h('p', {}, '用户名: ' + row.username),
         //       h('p', {}, '手机号: ' + row.userPhone),
         //       h('p', {}, '邮箱: ' + row.userEmail),
         //       h('p', {}, '性别: ' + row.userGender),
@@ -736,7 +736,7 @@
 
   const handleRowClick = (row: UserListItem) => {
     console.log('行点击:', row)
-    logEvent('行点击', `点击了用户: ${row.userName}`)
+    logEvent('行点击', `点击了用户: ${row.username}`)
   }
 
   const handleHeaderClick = (column: any) => {
@@ -866,7 +866,7 @@
   }
 
   const handleEdit = (row: UserListItem) => {
-    ElMessage.success(`编辑用户 ${row.userName} 成功`)
+    ElMessage.success(`编辑用户 ${row.username} 成功`)
     setTimeout(() => {
       refreshAfterUpdate()
     }, 1000)
@@ -874,7 +874,7 @@
 
   const handleDelete = async (row: UserListItem) => {
     try {
-      await ElMessageBox.confirm(`确定要删除用户 ${row.userName} 吗？`, '警告', {
+      await ElMessageBox.confirm(`确定要删除用户 ${row.username} 吗？`, '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -890,7 +890,7 @@
   }
 
   const handleView = (row: UserListItem) => {
-    ElMessage.info(`查看用户 ${row.userName}`)
+    ElMessage.info(`查看用户 ${row.username}`)
   }
 
   const handleBatchDelete = async () => {

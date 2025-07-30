@@ -99,7 +99,7 @@
     const row = props.userData
 
     Object.assign(formData, {
-      username: isEdit ? row.userName || '' : '',
+      username: isEdit ? row.username || '' : '',
       phone: isEdit ? row.userPhone || '' : '',
       gender: isEdit ? row.userGender || '男' : '男',
       role: isEdit ? (Array.isArray(row.userRoles) ? row.userRoles : []) : []
