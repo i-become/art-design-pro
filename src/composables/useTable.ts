@@ -167,17 +167,31 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     Object.assign(
       {
         [pageKey]: 1,
-        [sizeKey]: 10
+        [sizeKey]: 10,
+        sorts: [] as Api.Common.OrderItem[]
       },
       apiParams || {}
-    ) as P
+    ) as P & { sorts: Api.Common.OrderItem[] }
   )
 
   // 分页配置
-  const pagination = reactive<Api.Common.PaginatingParams>({
+  const pagination = reactive<{
+    current: number
+    size: number
+    total: number
+  }>({
     current: (searchParams as any)[pageKey] || 1,
     size: (searchParams as any)[sizeKey] || 10,
     total: 0
+  })
+
+  // 排序状态
+  const sortState = reactive<{
+    column: string | null
+    order: 'asc' | 'desc' | null
+  }>({
+    column: null,
+    order: null
   })
 
   // 移动端分页 (响应式)
@@ -312,6 +326,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
 
       // 更新状态
       data.value = tableData
+
       updatePaginationFromResponse(pagination, standardResponse)
 
       // 🔧 修复：避免重复设置相同的值，防止响应式循环更新
@@ -540,6 +555,40 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     return cleanedCount
   }
 
+  // 处理排序变化
+  const handleSortChange = async (column: string, order: 'asc' | 'desc' | null): Promise<void> => {
+    // 更新排序状态
+    sortState.column = column
+    sortState.order = order
+
+    // 构建排序参数 - 直接传递数组，让axios自动处理编码
+    if (order) {
+      ;(searchParams as any).sorts = [
+        {
+          column,
+          asc: order === 'asc'
+        }
+      ]
+    } else {
+      ;(searchParams as any).sorts = []
+    }
+
+    // 重置到第一页
+    ;(searchParams as any)[pageKey] = 1
+    pagination.current = 1
+
+    // 重新请求数据
+    await getDataByPage()
+  }
+
+  // 重置排序
+  const resetSort = async (): Promise<void> => {
+    sortState.column = null
+    sortState.order = null
+    ;(searchParams as any).sorts = []
+    await getDataByPage()
+  }
+
   // 设置定期清理过期缓存
   if (enableCache && cache) {
     cacheCleanupTimer = setInterval(() => {
@@ -588,6 +637,11 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     // 搜索相关 - 统一前缀
     searchState: searchParams,
     resetSearch: resetSearchParams,
+
+    // 排序相关 - 新增
+    sortState: readonly(sortState),
+    handleSortChange,
+    resetSort,
 
     // 数据操作 - 更明确的操作意图
     loadData: getData,

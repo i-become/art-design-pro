@@ -3,7 +3,7 @@
 import type { ApiResponse } from './tableCache'
 
 // 请求参数基础接口，扩展分页参数
-export interface BaseRequestParams extends Api.Common.PaginatingParams {
+export interface BaseRequestParams extends Api.Common.BasePage {
   [key: string]: unknown
 }
 
@@ -24,11 +24,28 @@ function extractRecords<T>(obj: Record<string, unknown>, fields: string[]): T[] 
   return []
 }
 
+// 辅助函数：安全地提取数字值（支持字符串类型的数字）
+function extractNumberValue(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return value
+  }
+  if (typeof value === 'string') {
+    const numValue = Number(value)
+    if (!isNaN(numValue) && isFinite(numValue)) {
+      return numValue
+    }
+  }
+  return null
+}
+
 // 辅助函数：从对象中提取总数
 function extractTotal(obj: Record<string, unknown>, records: unknown[], fields: string[]): number {
   for (const field of fields) {
-    if (field in obj && typeof obj[field] === 'number') {
-      return obj[field] as number
+    if (field in obj) {
+      const numValue = extractNumberValue(obj[field])
+      if (numValue !== null) {
+        return numValue
+      }
     }
   }
   return records.length
@@ -45,9 +62,12 @@ function extractPagination(
   const currentFields = ['current', 'page', 'pageNum']
   for (const src of sources) {
     for (const field of currentFields) {
-      if (field in src && typeof src[field] === 'number') {
-        result.current = src[field] as number
-        break
+      if (field in src) {
+        const numValue = extractNumberValue(src[field])
+        if (numValue !== null) {
+          result.current = numValue
+          break
+        }
       }
     }
     if (result.current !== undefined) break
@@ -56,9 +76,12 @@ function extractPagination(
   const sizeFields = ['size', 'pageSize', 'limit']
   for (const src of sources) {
     for (const field of sizeFields) {
-      if (field in src && typeof src[field] === 'number') {
-        result.size = src[field] as number
-        break
+      if (field in src) {
+        const numValue = extractNumberValue(src[field])
+        if (numValue !== null) {
+          result.size = numValue
+          break
+        }
       }
     }
     if (result.size !== undefined) break
@@ -133,7 +156,11 @@ export const extractTableData = <T>(response: ApiResponse<T>): T[] => {
  * 根据API响应更新分页信息
  */
 export const updatePaginationFromResponse = <T>(
-  pagination: Api.Common.PaginatingParams,
+  pagination: {
+    current: number
+    size: number
+    total: number
+  },
   response: ApiResponse<T>
 ): void => {
   pagination.total = response.total ?? pagination.total ?? 0

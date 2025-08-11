@@ -21,9 +21,9 @@
         :data="tableData"
         :columns="columns"
         :pagination="paginationState"
-        @selection-change="handleSelectionChange"
         @pagination:size-change="onPageSizeChange"
         @pagination:current-change="onCurrentPageChange"
+        @sort-change="handleTableSortChange"
       >
       </ArtTable>
 
@@ -32,8 +32,17 @@
         v-model:visible="dialogVisible"
         :type="dialogType"
         :user-data="currentUserData"
-        @submit="handleDialogSubmit"
+        @success="refreshAll"
       />
+
+      <!-- 调试信息 -->
+      <div
+        v-if="false"
+        style="padding: 10px; margin-top: 20px; background: #f5f5f5; border-radius: 4px"
+      >
+        <h4>调试信息 - 排序状态</h4>
+        <pre>{{ JSON.stringify(debugSortInfo, null, 2) }}</pre>
+      </div>
     </ElCard>
   </div>
 </template>
@@ -42,8 +51,10 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
   import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
+  import { h, nextTick, ref } from 'vue'
   import { useTable } from '@/composables/useTable'
   import { UserService } from '@/api/usersApi'
+  import { formatTableDateTime } from '@/utils/dataprocess/format'
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
 
@@ -57,9 +68,6 @@
   const dialogType = ref<Form.DialogType>('add')
   const dialogVisible = ref(false)
   const currentUserData = ref<Partial<UserListItem>>({})
-
-  // 选中行
-  const selectedRows = ref<UserListItem[]>([])
 
   // 表单搜索初始值
   const defaultFilter = ref({
@@ -77,8 +85,8 @@
 
   // 用户性别配置
   const USER_SEX_CONFIG = {
-    0: '男',
-    1: '女'
+    BOY: '男',
+    GIRL: '女'
   } as const
 
   /**
@@ -96,7 +104,7 @@
   /**
    * 获取用户性别配置
    */
-  const getUserSexConfig = (sex: number) => {
+  const getUserSexConfig = (sex: string) => {
     return USER_SEX_CONFIG[sex as keyof typeof USER_SEX_CONFIG] || '未知'
   }
 
@@ -111,7 +119,10 @@
     resetSearch,
     onPageSizeChange,
     onCurrentPageChange,
-    refreshAll
+    refreshAll,
+    refreshAfterRemove,
+    sortState,
+    handleSortChange
   } = useTable<UserListItem>({
     // 核心配置
     core: {
@@ -129,7 +140,6 @@
       //   size: 'pageSize'
       // },
       columnsFactory: () => [
-        { type: 'selection' }, // 勾选列
         { type: 'index', width: 60, label: '序号' }, // 序号
         {
           prop: 'avatar',
@@ -145,24 +155,23 @@
         {
           prop: 'loginName',
           label: '账号',
-          sortable: true
+          sortable: true,
+          'sort-by': 'loginName'
         },
         {
           prop: 'email',
-          label: '邮箱',
-          sortable: true
+          label: '邮箱'
         },
         {
           prop: 'sex',
           label: '性别',
-          sortable: true,
-          // checked: false, // 隐藏列
           formatter: (row) => getUserSexConfig(row.sex)
         },
         { prop: 'phone', label: '手机号' },
         {
           prop: 'status',
           label: '状态',
+          width: 100,
           formatter: (row) => {
             const statusConfig = getUserStatusConfig(row.status)
             return h(ElTag, { type: statusConfig.type }, () => statusConfig.text)
@@ -171,34 +180,60 @@
         {
           prop: 'createTime',
           label: '创建日期',
-          sortable: true
+          sortable: true,
+          'sort-by': 'createTime',
+          formatter: (row) => {
+            if (!row.createTime) return '-'
+            return formatTableDateTime(row.createTime)
+          }
         },
         {
           prop: 'loginIp',
-          label: '最后登录IP',
-          sortable: true
+          label: '最后登录IP'
         },
         {
           prop: 'loginDate',
           label: '最后登录时间',
-          sortable: true
+          sortable: true,
+          'sort-by': 'loginDate',
+          formatter: (row) => {
+            if (!row.loginDate) return '-'
+            return formatTableDateTime(row.loginDate)
+          }
         },
         {
           prop: 'operation',
           label: '操作',
-          width: 120,
+          width: 150,
           fixed: 'right', // 固定列
+          'header-align': 'center', // 表头居中对齐
           formatter: (row) =>
-            h('div', [
-              h(ArtButtonTable, {
-                type: 'edit',
-                onClick: () => showDialog('edit', row)
-              }),
-              h(ArtButtonTable, {
-                type: 'delete',
-                onClick: () => deleteUser(row)
-              })
-            ])
+            h(
+              'div',
+              {
+                style: 'display: flex; align-items: center; gap: 8px;'
+              },
+              [
+                h(ArtButtonTable, {
+                  type: 'edit',
+                  onClick: () => showDialog('edit', row)
+                }),
+                // 根据用户状态显示启用/禁用图标按钮
+                row.status === 'NORMAL'
+                  ? h(ArtButtonTable, {
+                      type: 'disable',
+                      onClick: () => disableUser(row)
+                    })
+                  : h(ArtButtonTable, {
+                      type: 'enable',
+                      onClick: () => enableUser(row)
+                    }),
+                h(ArtButtonTable, {
+                  type: 'delete',
+                  onClick: () => deleteUser(row)
+                })
+              ]
+            )
         }
       ]
     },
@@ -232,11 +267,14 @@
   const handleSearch = (params: Record<string, any>) => {
     // 处理日期区间参数，把 daterange 转换为 startTime 和 endTime
     const { daterange, ...searchParams } = params
-    console.log(daterange)
     const [startCreateTime, endCreateTime] = Array.isArray(daterange) ? daterange : [null, null]
 
     // 搜索参数赋值
-    Object.assign(searchState, { ...searchParams, startCreateTime, endCreateTime })
+    Object.assign(searchState, {
+      ...searchParams,
+      startCreateTime: startCreateTime,
+      endCreateTime: endCreateTime
+    })
     searchData()
   }
 
@@ -253,37 +291,122 @@
   }
 
   /**
-   * 删除用户
+   * 处理表格排序变化
    */
-  const deleteUser = (row: UserListItem): void => {
-    console.log('删除用户:', row)
-    ElMessageBox.confirm(`确定要注销该用户吗？`, '注销用户', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'error'
-    }).then(() => {
-      ElMessage.success('注销成功')
-    })
+  const handleTableSortChange = ({
+    column,
+    prop,
+    order
+  }: {
+    column: any
+    prop: string
+    order: string
+  }) => {
+    console.log('排序变化:', { column, prop, order })
+    // 将Element Plus的排序值转换为我们的排序值
+    const sortOrder = order === 'ascending' ? 'asc' : order === 'descending' ? 'desc' : null
+    handleSortChange(prop, sortOrder as 'asc' | 'desc' | null)
   }
 
+  // 调试信息：显示当前排序状态
+  const debugSortInfo = computed(() => {
+    const sorts = (searchState as any).sorts || []
+    return {
+      currentSort: sortState,
+      sortsParams: sorts,
+      searchParams: { ...searchState }
+    }
+  })
+
   /**
-   * 处理弹窗提交事件
+   * 删除用户
    */
-  const handleDialogSubmit = async () => {
+  const deleteUser = async (row: UserListItem): Promise<void> => {
     try {
-      dialogVisible.value = false
-      currentUserData.value = {}
-    } catch (error) {
-      console.error('提交失败:', error)
+      await ElMessageBox.confirm(
+        `确定要删除用户 "${row.username}" 吗？此操作不可恢复！`,
+        '删除用户',
+        {
+          confirmButtonText: '确定删除',
+          cancelButtonText: '取消',
+          type: 'warning',
+          confirmButtonClass: 'el-button--danger'
+        }
+      )
+
+      // 调用删除API
+      await UserService.deleteUser(row.id)
+      ElMessage.success('用户删除成功')
+
+      // 删除后刷新数据
+      refreshAfterRemove()
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        // 不是用户取消操作
+        ElMessage.error(error.message || '删除失败，请稍后重试')
+        console.error('删除用户失败:', error)
+      }
     }
   }
 
   /**
-   * 处理表格行选择变化
+   * 禁用用户
    */
-  const handleSelectionChange = (selection: UserListItem[]): void => {
-    selectedRows.value = selection
-    console.log('选中行数据:', selectedRows.value)
+  const disableUser = async (row: UserListItem): Promise<void> => {
+    try {
+      await ElMessageBox.confirm(
+        `确定要禁用用户 "${row.username}" 吗？禁用后该用户将无法登录系统。`,
+        '禁用用户',
+        {
+          confirmButtonText: '确定禁用',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+
+      // 调用禁用API
+      await UserService.disableUser(row.id)
+      ElMessage.success('用户禁用成功')
+
+      // 禁用后刷新数据
+      refreshAll()
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        // 不是用户取消操作
+        ElMessage.error(error.message || '禁用失败，请稍后重试')
+        console.error('禁用用户失败:', error)
+      }
+    }
+  }
+
+  /**
+   * 启用用户
+   */
+  const enableUser = async (row: UserListItem): Promise<void> => {
+    try {
+      await ElMessageBox.confirm(
+        `确定要启用用户 "${row.username}" 吗？启用后该用户将可以正常登录系统。`,
+        '启用用户',
+        {
+          confirmButtonText: '确定启用',
+          cancelButtonText: '取消',
+          type: 'info'
+        }
+      )
+
+      // 调用启用API
+      await UserService.enableUser(row.id)
+      ElMessage.success('用户启用成功')
+
+      // 启用后刷新数据
+      refreshAll()
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        // 不是用户取消操作
+        ElMessage.error(error.message || '启用失败，请稍后重试')
+        console.error('启用用户失败:', error)
+      }
+    }
   }
 </script>
 

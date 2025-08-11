@@ -16,7 +16,7 @@
 
   interface Props {
     /** 按钮类型 */
-    type?: 'add' | 'edit' | 'delete' | 'more' | 'view'
+    type?: 'add' | 'edit' | 'delete' | 'more' | 'view' | 'disable' | 'enable'
     /** 按钮图标 */
     icon?: string
     /** 按钮样式类 */
@@ -39,7 +39,9 @@
     edit: { icon: '&#xe642;', color: BgColorEnum.SECONDARY },
     delete: { icon: '&#xe783;', color: BgColorEnum.ERROR },
     view: { icon: '&#xe689;', color: BgColorEnum.INFO },
-    more: { icon: '&#xe6df;', color: '' }
+    more: { icon: '&#xe6df;', color: '' },
+    disable: { icon: '&#xe80a;', color: BgColorEnum.WARNING },
+    enable: { icon: '&#xe715;', color: BgColorEnum.SUCCESS }
   } as const
 
   // 获取图标内容

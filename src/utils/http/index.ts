@@ -22,6 +22,57 @@ const axiosInstance = axios.create({
   baseURL: VITE_API_URL, // API地址
   withCredentials: VITE_WITH_CREDENTIALS === 'true', // 是否携带cookie，默认关闭
   validateStatus: (status) => status >= 200 && status < 300, // 只接受 2xx 的状态码
+  // 配置序列化器，确保数组参数正确编码
+  paramsSerializer: {
+    serialize: (params: any) => {
+      const searchParams = new URLSearchParams()
+
+      const serializeValue = (key: string, value: any, parentKey?: string) => {
+        if (value === null || value === undefined) {
+          return
+        }
+
+        if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            if (typeof item === 'object' && item !== null) {
+              // 处理对象数组，如 sorts: [{ column: 'name', asc: true }]
+              // 使用点号分隔符：sorts[0].column=name&sorts[0].asc=true
+              Object.keys(item).forEach((propKey) => {
+                const fullKey = parentKey
+                  ? `${parentKey}[${index}].${propKey}`
+                  : `${key}[${index}].${propKey}`
+                searchParams.append(fullKey, String(item[propKey]))
+              })
+            } else {
+              // 处理简单数组
+              const fullKey = parentKey ? `${parentKey}[${index}]` : `${key}[${index}]`
+              searchParams.append(fullKey, String(item))
+            }
+          })
+        } else if (typeof value === 'object') {
+          // 处理嵌套对象，使用点号分隔符
+          Object.keys(value).forEach((propKey) => {
+            const fullKey = parentKey ? `${parentKey}.${propKey}` : `${key}.${propKey}`
+            serializeValue(propKey, value[propKey], fullKey)
+          })
+        } else {
+          // 处理简单值
+          const fullKey = parentKey || key
+          searchParams.append(fullKey, String(value))
+        }
+      }
+
+      Object.keys(params).forEach((key) => {
+        serializeValue(key, params[key])
+      })
+
+      return searchParams.toString()
+    }
+  },
+  // 序列化格式说明：
+  // 原始参数: { sorts: [{ column: 'loginName', asc: true }] }
+  // 生成URL: sorts[0].column=loginName&sorts[0].asc=true
+  // 编码后: sorts%5B0%5D.column=loginName&sorts%5B0%5D.asc=true
   transformResponse: [
     (data, headers) => {
       const contentType = headers['content-type']

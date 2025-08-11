@@ -20,18 +20,28 @@ declare namespace Api {
 
   /** 通用类型 */
   namespace Common {
-    /** 分页参数 */
-    interface PaginatingParams {
-      /** 当前页码 */
-      current: number
-      /** 每页条数 */
-      size: number
-      /** 总条数 */
-      total: number
+    /** 排序项 */
+    interface OrderItem {
+      /** 需要进行排序的字段 */
+      column: string
+      /** 是否正序排列，默认 true */
+      asc: boolean
     }
 
-    /** 通用搜索参数 */
-    type PaginatingSearchParams = Pick<PaginatingParams, 'current' | 'size'>
+    /** 基础分页参数 */
+    interface BasePage {
+      /** 页号 */
+      current: number
+      /** 页大小 */
+      size: number
+      /** 排序字段 */
+      sorts?: OrderItem[]
+    }
+
+    /** 分页搜索参数 */
+    interface PaginatingSearchParams extends BasePage {
+      [key: string]: any
+    }
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'
@@ -72,6 +82,7 @@ declare namespace Api {
       current: number
       size: number
       total: number
+      sorts?: Api.Common.OrderItem[]
     }
 
     /** 用户列表项 */
@@ -82,7 +93,7 @@ declare namespace Api {
       username: string
       email: string
       phone: string
-      sex: number
+      sex: string
       avatar: string
       status: 'NORMAL' | 'DISABLED' // 状态（NORMAL 正常 DISABLED 停用）
       loginIp: string // 最后登录IP
@@ -91,6 +102,34 @@ declare namespace Api {
       createTime: string
       updateBy: string
       updateTime: string
+    }
+
+    /** 添加用户参数 */
+    interface AddUserParams {
+      deptId?: number // 部门编号
+      loginName?: string // 账号
+      password?: string // 密码
+      username?: string // 用户名
+      email?: string // 邮箱
+      phone?: string // 手机号码
+      sex: string
+      avatar?: string // 头像路径
+      roleIds: number[] // 角色编号列表,
+      postIds: number[] // 岗位编号列表
+    }
+
+    /** 更新用户参数 */
+    interface UpdateUserParams {
+      deptId?: number // 部门编号
+      loginName?: string // 账号
+      password?: string // 密码（可选，为空时不更新）
+      username?: string // 用户名
+      email?: string // 邮箱
+      phone?: string // 手机号码
+      sex?: string
+      avatar?: string // 头像路径
+      roleIds?: number[] // 角色编号列表,
+      postIds?: number[] // 岗位编号列表
     }
   }
 
@@ -116,6 +155,29 @@ declare namespace Api {
       isKeepAlive?: boolean
       tag?: string
       perms?: string
+    }
+  }
+
+  // 角色类型
+  namespace Role {
+    /** 角色列表项 */
+    interface RoleList {
+      id: number
+      roleName: string
+      roleKey: string // 角色权限字符串
+      dataScope: string // 数据范围
+      createTime: string // 创建时间
+    }
+  }
+
+  // 部门类型
+  namespace Dept {
+    /** 部门列表项 */
+    interface DeptList {
+      id: number
+      deptName: string
+      parentId: number
+      checked: boolean
     }
   }
 }
