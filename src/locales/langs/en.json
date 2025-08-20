@@ -322,5 +322,88 @@
     "zebra": "Zebra",
     "border": "Border",
     "headerBackground": "Header BG"
+  },
+  "role": {
+    "title": "Role Management",
+    "search": {
+      "roleName": "Please enter role name",
+      "roleKey": "Please enter role key",
+      "status": "Please select status"
+    },
+    "status": {
+      "normal": "Normal",
+      "disabled": "Disabled"
+    },
+    "dataScope": {
+      "all": "All Data Permission",
+      "custom": "Custom Data Permission",
+      "deptAndChild": "Department and Below Permission",
+      "dept": "Department Permission",
+      "self": "Self Permission Only",
+      "none": "No Data Permission"
+    },
+    "table": {
+      "roleName": "Role Name",
+      "roleKey": "Role Key",
+      "sort": "Display Order",
+      "dataScope": "Data Scope",
+      "status": "Status",
+      "createTime": "Create Time",
+      "operation": "Operation"
+    },
+    "operation": {
+      "permission": "Menu Permission",
+      "edit": "Edit Role",
+      "delete": "Delete Role",
+      "enable": "Enable",
+      "disable": "Disable"
+    },
+    "dialog": {
+      "add": "Add Role",
+      "edit": "Edit Role",
+      "permission": "Menu Permission",
+      "form": {
+        "roleName": "Role Name",
+        "roleKey": "Role Key",
+        "sort": "Display Order",
+        "dataScope": "Data Scope",
+        "remark": "Remark"
+      },
+      "placeholder": {
+        "roleName": "Please enter role name",
+        "roleKey": "Please enter role key",
+        "sort": "Please enter display order",
+        "dataScope": "Please select data scope",
+        "remark": "Please enter remark"
+      }
+    },
+    "permission": {
+      "expandAll": "Expand All",
+      "collapseAll": "Collapse All",
+      "selectAll": "Select All",
+      "unselectAll": "Unselect All",
+      "save": "Save"
+    },
+    "message": {
+      "addSuccess": "Add successfully",
+      "editSuccess": "Edit successfully",
+      "deleteSuccess": "Delete successfully",
+      "deleteConfirm": "Are you sure to delete this role?",
+      "enableSuccess": "Enable successfully",
+      "disableSuccess": "Disable successfully",
+      "enableConfirm": "Are you sure to enable this role?",
+      "disableConfirm": "Are you sure to disable this role?",
+      "permissionSaveSuccess": "Permission saved successfully",
+      "getListFailed": "Failed to get role list",
+      "submitFailed": "Failed to submit role",
+      "deleteFailed": "Failed to delete role",
+      "updateStatusFailed": "Failed to update role status"
+    },
+    "validation": {
+      "roleNameRequired": "Please enter role name",
+      "roleNameLength": "Length should be between 2 and 20 characters",
+      "roleKeyRequired": "Please enter role key",
+      "roleKeyLength": "Length should be between 2 and 20 characters"
+    }
   }
 }

@@ -314,5 +314,88 @@
     "zebra": "斑马纹",
     "border": "边框",
     "headerBackground": "表头背景"
+  },
+  "role": {
+    "title": "角色管理",
+    "search": {
+      "roleName": "请输入角色名称",
+      "roleKey": "请输入角色编码",
+      "status": "请选择状态"
+    },
+    "status": {
+      "normal": "正常",
+      "disabled": "停用"
+    },
+    "dataScope": {
+      "all": "全部数据权限",
+      "custom": "自定义数据权限",
+      "deptAndChild": "本部门及以下数据权限",
+      "dept": "本部门数据权限",
+      "self": "仅本人数据权限",
+      "none": "没有数据权限"
+    },
+    "table": {
+      "roleName": "角色名称",
+      "roleKey": "角色编码",
+      "sort": "显示顺序",
+      "dataScope": "数据范围",
+      "status": "状态",
+      "createTime": "创建时间",
+      "operation": "操作"
+    },
+    "operation": {
+      "permission": "菜单权限",
+      "edit": "编辑角色",
+      "delete": "删除角色",
+      "enable": "启用",
+      "disable": "禁用"
+    },
+    "dialog": {
+      "add": "新增角色",
+      "edit": "编辑角色",
+      "permission": "菜单权限",
+      "form": {
+        "roleName": "角色名称",
+        "roleKey": "角色编码",
+        "sort": "显示顺序",
+        "dataScope": "数据范围",
+        "remark": "备注"
+      },
+      "placeholder": {
+        "roleName": "请输入角色名称",
+        "roleKey": "请输入角色编码",
+        "sort": "请输入显示顺序",
+        "dataScope": "请选择数据范围",
+        "remark": "请输入备注"
+      }
+    },
+    "permission": {
+      "expandAll": "全部展开",
+      "collapseAll": "全部收起",
+      "selectAll": "全部选择",
+      "unselectAll": "取消全选",
+      "save": "保存"
+    },
+    "message": {
+      "addSuccess": "新增成功",
+      "editSuccess": "修改成功",
+      "deleteSuccess": "删除成功",
+      "deleteConfirm": "确定删除该角色吗？",
+      "enableSuccess": "启用成功",
+      "disableSuccess": "禁用成功",
+      "enableConfirm": "确定要启用该角色吗？",
+      "disableConfirm": "确定要禁用该角色吗？",
+      "permissionSaveSuccess": "权限保存成功",
+      "getListFailed": "获取角色列表失败",
+      "submitFailed": "提交角色失败",
+      "deleteFailed": "删除角色失败",
+      "updateStatusFailed": "更新角色状态失败"
+    },
+    "validation": {
+      "roleNameRequired": "请输入角色名称",
+      "roleNameLength": "长度在 2 到 20 个字符",
+      "roleKeyRequired": "请输入角色编码",
+      "roleKeyLength": "长度在 2 到 20 个字符"
+    }
   }
 }

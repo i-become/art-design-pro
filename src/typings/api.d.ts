@@ -168,6 +168,58 @@ declare namespace Api {
       dataScope: string // 数据范围
       createTime: string // 创建时间
     }
+
+    /** 角色分页查询参数 */
+    interface RolePageParams extends Api.Common.BasePage {
+      roleName?: string // 角色名称
+      roleKey?: string // 角色权限字符串
+      status?: 'NORMAL' | 'DISABLED' // 角色状态（NORMAL 正常 DISABLED 停用）
+      startCreateTime?: string // 创建时间 - 开始
+      endCreateTime?: string // 创建时间 - 结束
+      userId?: number // 用户编号
+    }
+
+    /** 角色分页响应数据 */
+    interface RolePageData {
+      records: RoleListItem[]
+      current: number
+      size: number
+      total: number
+      sorts?: Api.Common.OrderItem[]
+    }
+
+    /** 角色列表项（包含更多字段） */
+    interface RoleListItem {
+      id: number
+      roleName: string
+      roleKey: string // 角色权限字符串
+      sort: number // 显示顺序
+      dataScope: string // 数据范围
+      status: 'NORMAL' | 'DISABLED' // 角色状态
+      menuIdList?: number[] // 菜单编号列表
+      deptIdList?: number[] // 部门编号列表
+      createBy?: string
+      createTime: string
+      updateBy?: string
+      updateTime?: string
+      remark?: string // 备注
+    }
+
+    /** 添加角色参数 */
+    interface AddRoleParams {
+      roleName: string // 角色名称
+      roleKey: string // 角色权限字符串
+      sort?: number // 显示顺序
+      dataScope?: string // 数据范围
+      menuIdList?: number[] // 菜单编号列表
+      deptIdList?: number[] // 部门编号列表
+      remark?: string // 备注
+    }
+
+    /** 更新角色参数 */
+    interface UpdateRoleParams extends AddRoleParams {
+      id: number // 角色编号
+    }
   }
 
   // 部门类型
