@@ -1,28 +1,28 @@
 <!-- 用户管理 -->
 <!-- art-full-height 自动计算出页面剩余高度 -->
 <!-- art-table-card 一个符合系统样式的 class，同时自动撑满剩余高度 -->
-<!-- 如果你想使用 template 语法，请移步功能示例下面的高级表格示例 -->
+<!-- 更多 useTable 使用示例请移步至 功能示例 下面的 高级表格示例 -->
 <template>
   <div class="user-page art-full-height">
     <!-- 搜索栏 -->
-    <UserSearch v-model:filter="defaultFilter" @reset="resetSearch" @search="handleSearch" />
+    <UserSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams"></UserSearch>
 
     <ElCard class="art-table-card" shadow="never">
       <!-- 表格头部 -->
-      <ArtTableHeader v-model:columns="columnChecks" @refresh="refreshAll">
+      <ArtTableHeader v-model:columns="columnChecks" @refresh="refreshData">
         <template #left>
-          <ElButton @click="showDialog('add')">新增用户</ElButton>
+          <ElButton @click="showDialog('add')" v-ripple>新增用户</ElButton>
         </template>
       </ArtTableHeader>
 
       <!-- 表格 -->
       <ArtTable
-        :loading="isLoading"
-        :data="tableData"
+        :loading="loading"
+        :data="data"
         :columns="columns"
-        :pagination="paginationState"
-        @pagination:size-change="onPageSizeChange"
-        @pagination:current-change="onCurrentPageChange"
+        :pagination="pagination"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
         @sort-change="handleTableSortChange"
       >
       </ArtTable>
@@ -32,7 +32,7 @@
         v-model:visible="dialogVisible"
         :type="dialogType"
         :user-data="currentUserData"
-        @success="refreshAll"
+        @success="handleDialogSuccess"
       />
 
       <!-- 调试信息 -->
@@ -50,7 +50,7 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import { ACCOUNT_TABLE_DATA } from '@/mock/temp/formData'
-  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
+  import { ElMessageBox, ElMessage, ElTag, ElImage } from 'element-plus'
   import { h, nextTick, ref } from 'vue'
   import { useTable } from '@/composables/useTable'
   import { UserService } from '@/api/usersApi'
@@ -61,7 +61,6 @@
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.User.UserListItem
-  const { width } = useWindowSize()
   const { getUserList } = UserService
 
   // 弹窗相关
@@ -70,11 +69,11 @@
   const currentUserData = ref<Partial<UserListItem>>({})
 
   // 表单搜索初始值
-  const defaultFilter = ref({
+  const searchForm = ref({
     username: undefined,
     loginName: undefined,
     daterange: [],
-    status: 'NORMAL'
+    status: ''
   })
 
   // 用户状态配置
@@ -111,16 +110,18 @@
   const {
     columns,
     columnChecks,
-    tableData,
-    isLoading,
-    paginationState,
-    searchData,
-    searchState,
-    resetSearch,
-    onPageSizeChange,
-    onCurrentPageChange,
-    refreshAll,
-    refreshAfterRemove,
+    data,
+    loading,
+    pagination,
+    getData,
+    searchParams,
+    resetSearchParams,
+    handleSizeChange,
+    handleCurrentChange,
+    refreshData,
+    refreshCreate,
+    refreshUpdate,
+    refreshRemove,
     sortState,
     handleSortChange
   } = useTable<UserListItem>({
@@ -130,24 +131,25 @@
       apiParams: {
         current: 1,
         size: 20,
-        ...defaultFilter.value
-        // pageNum: 1,
-        // pageSize: 20
+        ...searchForm.value
       },
-      // 自定义分页字段映射，同时需要在 apiParams 中配置字段名
-      // paginationKey: {
-      //   current: 'pageNum',
-      //   size: 'pageSize'
-      // },
+      // 排除 apiParams 中的属性
+      excludeParams: ['daterange'],
       columnsFactory: () => [
         { type: 'index', width: 60, label: '序号' }, // 序号
         {
           prop: 'avatar',
           label: '用户名',
-          minWidth: width.value < 500 ? 220 : '',
+          width: 280,
           formatter: (row) => {
             return h('div', { class: 'user', style: 'display: flex; align-items: center' }, [
-              h('img', { class: 'avatar', src: row.avatar }),
+              h(ElImage, {
+                class: 'avatar',
+                src: row.avatar,
+                previewSrcList: [row.avatar],
+                // 图片预览是否插入至 body 元素上，用于解决表格内部图片预览样式异常
+                previewTeleported: true
+              }),
               h('div', {}, [h('p', { class: 'user-name' }, row.username)])
             ])
           }
@@ -266,16 +268,11 @@
    */
   const handleSearch = (params: Record<string, any>) => {
     // 处理日期区间参数，把 daterange 转换为 startTime 和 endTime
-    const { daterange, ...searchParams } = params
+    const { daterange, ...filtersParams } = params
     const [startCreateTime, endCreateTime] = Array.isArray(daterange) ? daterange : [null, null]
-
     // 搜索参数赋值
-    Object.assign(searchState, {
-      ...searchParams,
-      startCreateTime: startCreateTime,
-      endCreateTime: endCreateTime
-    })
-    searchData()
+    Object.assign(searchParams, { ...filtersParams, startCreateTime, endCreateTime })
+    getData()
   }
 
   /**
@@ -310,11 +307,11 @@
 
   // 调试信息：显示当前排序状态
   const debugSortInfo = computed(() => {
-    const sorts = (searchState as any).sorts || []
+    const sorts = (searchParams as any).sorts || []
     return {
       currentSort: sortState,
       sortsParams: sorts,
-      searchParams: { ...searchState }
+      searchParams: { ...searchParams }
     }
   })
 
@@ -339,7 +336,7 @@
       ElMessage.success('用户删除成功')
 
       // 删除后刷新数据
-      refreshAfterRemove()
+      refreshRemove()
     } catch (error: any) {
       if (error !== 'cancel') {
         // 不是用户取消操作
@@ -369,7 +366,7 @@
       ElMessage.success('用户禁用成功')
 
       // 禁用后刷新数据
-      refreshAll()
+      refreshRemove()
     } catch (error: any) {
       if (error !== 'cancel') {
         // 不是用户取消操作
@@ -399,13 +396,26 @@
       ElMessage.success('用户启用成功')
 
       // 启用后刷新数据
-      refreshAll()
+      refreshRemove()
     } catch (error: any) {
       if (error !== 'cancel') {
         // 不是用户取消操作
         ElMessage.error(error.message || '启用失败，请稍后重试')
         console.error('启用用户失败:', error)
       }
+    }
+  }
+
+  /**
+   * 处理弹窗操作成功后的刷新逻辑
+   */
+  const handleDialogSuccess = () => {
+    if (dialogType.value === 'add') {
+      // 新增用户后，回到第一页并清空分页缓存
+      refreshCreate()
+    } else if (dialogType.value === 'edit') {
+      // 编辑用户后，保持当前页，仅清空当前搜索缓存
+      refreshUpdate()
     }
   }
 </script>
@@ -416,6 +426,7 @@
       .avatar {
         width: 40px;
         height: 40px;
+        margin-left: 0;
         border-radius: 6px;
       }
 

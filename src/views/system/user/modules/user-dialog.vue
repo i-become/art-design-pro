@@ -90,8 +90,9 @@
   }
 
   interface Emits {
-    (e: 'update:visible', value: boolean): void
+    (e: 'update:visible', value: boolean): boolean
     (e: 'submit'): void
+    (e: 'success'): void
   }
 
   const props = defineProps<Props>()
@@ -284,6 +285,7 @@
           }
           dialogVisible.value = false
           emit('submit')
+          emit('success')
         }
       })
     } catch (error: any) {

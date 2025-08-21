@@ -1,101 +1,95 @@
-<!-- 用户搜索栏 -->
 <template>
   <ArtSearchBar
-    v-model:filter="searchFormState"
+    ref="searchBarRef"
+    v-model="formData"
     :items="formItems"
     @reset="handleReset"
     @search="handleSearch"
-  />
+  >
+    <template #email>
+      <ElInput v-model="formData.email" placeholder="我是插槽渲染出来的组件" />
+    </template>
+  </ArtSearchBar>
 </template>
 
 <script setup lang="ts">
-  import type { SearchChangeParams, SearchFormItem } from '@/types'
+  import { ref, computed } from 'vue'
 
+  interface Props {
+    modelValue: Record<string, any>
+  }
   interface Emits {
+    (e: 'update:modelValue', value: Record<string, any>): void
     (e: 'search', params: Record<string, any>): void
     (e: 'reset'): void
   }
-
-  const props = defineProps<{
-    filter: Record<string, any>
-  }>()
-
+  const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
 
-  const searchFormState = ref({ ...props.filter })
-
-  watch(
-    () => props.filter,
-    (newFilter) => {
-      searchFormState.value = { ...newFilter }
-    },
-    { deep: true, immediate: true }
-  )
-
-  // 重置表单
-  const handleReset = () => {
-    searchFormState.value = { ...props.filter }
-    emit('reset')
-  }
-
-  // 搜索处理
-  const handleSearch = () => {
-    console.log('搜索参数:', searchFormState.value)
-    emit('search', searchFormState.value)
-  }
-
-  const handleFormChange = (params: SearchChangeParams): void => {
-    console.log('表单项变更:', params)
-  }
+  // 表单数据双向绑定
+  const searchBarRef = ref()
+  const formData = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  })
 
   // --- 表单配置项 ---
-  const formItems: SearchFormItem[] = [
+  const formItems = computed(() => [
     {
       label: '账号',
-      prop: 'loginName',
+      key: 'loginName',
       type: 'input',
-      config: {
-        clearable: true
-      },
-      onChange: handleFormChange
+      placeholder: '请输入账号',
+      clearable: true
     },
     {
       label: '用户名',
-      prop: 'username',
+      key: 'username',
       type: 'input',
-      config: {
-        clearable: true
-      },
-      onChange: handleFormChange
+      placeholder: '请输入用户名',
+      clearable: true
     },
     {
-      label: '电话',
-      prop: 'phone',
+      label: '手机号',
+      key: 'phone',
       type: 'input',
-      config: {
-        clearable: true
-      },
-      onChange: handleFormChange
+      placeholder: '请输入手机号',
+      clearable: true
     },
     {
-      prop: 'daterange',
       label: '日期范围',
-      type: 'datetimerange',
-      config: {
-        type: 'datetimerange',
-        startPlaceholder: '开始时间',
-        endPlaceholder: '结束时间'
+      key: 'daterange',
+      type: 'datetime',
+      props: {
+        placeholder: '请选择日期',
+        type: 'daterange',
+        rangeSeparator: '至',
+        startPlaceholder: '开始日期',
+        endPlaceholder: '结束日期'
       }
     },
     {
       label: '状态',
-      prop: 'status',
-      type: 'radio',
+      key: 'status',
+      type: 'select',
+      placeholder: '请选择状态',
+      clearable: true,
       options: [
         { label: '正常', value: 'NORMAL' },
         { label: '停用', value: 'DISABLED' }
-      ],
-      onChange: handleFormChange
+      ]
     }
-  ]
+  ])
+
+  // 事件
+  function handleReset() {
+    console.log('重置表单')
+    emit('reset')
+  }
+
+  async function handleSearch() {
+    await searchBarRef.value.validate()
+    emit('search', formData.value)
+    console.log('表单数据', formData.value)
+  }
 </script>
